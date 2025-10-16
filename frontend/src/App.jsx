@@ -1,85 +1,118 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import "./App.css";
 
 function App() {
   const [player, setPlayer] = useState({ hp: 100 });
   const [enemy, setEnemy] = useState({ hp: 100 });
-  const [message, setMessage] = useState("Battle begins!");
+  const [message, setMessage] = useState("The battle begins!");
+  const [turn, setTurn] = useState("player");
+  const [waiting, setWaiting] = useState(false);
 
+  // Load initial game state
   useEffect(() => {
     fetch("http://127.0.0.1:5000/api/state")
       .then((res) => res.json())
       .then((data) => {
         setPlayer(data.player);
         setEnemy(data.enemy);
+        setTurn(data.turn);
       });
   }, []);
 
-  const handleAction = (action) => {
-    fetch(`http://127.0.0.1:5000/api/${action}`, { method: "POST" })
-      .then((res) => res.json())
-      .then((data) => {
-        setPlayer(data.player);
-        setEnemy(data.enemy);
-        setMessage(data.message);
-      });
-  };
+  const castSpell = async (spell) => {
+    if (turn !== "player" || waiting) return; // prevent spam
 
-  const resetGame = () => {
-    fetch("http://127.0.0.1:5000/api/reset", { method: "POST" })
-      .then((res) => res.json())
-      .then((data) => {
-        setPlayer(data.player);
-        setEnemy(data.enemy);
-        setMessage("Battle reset!");
-      });
-  };
+    setWaiting(true);
 
-  const renderHPBar = (hp) => {
-    const width = Math.max(hp, 0);
-    const color = hp > 60 ? "green" : hp > 30 ? "orange" : "red";
-    return (
-      <div style={{ width: "200px", height: "20px", background: "#ddd", borderRadius: "10px", margin: "auto" }}>
-        <div
-          style={{
-            width: `${width}%`,
-            height: "100%",
-            background: color,
-            borderRadius: "10px",
-            transition: "width 0.3s ease",
-          }}
-        ></div>
-      </div>
-    );
+    // 1️⃣ Player casts spell
+    const response = await fetch("http://127.0.0.1:5000/api/spell", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ spell }),
+    });
+
+    const data = await response.json();
+    setPlayer(data.player);
+    setEnemy(data.enemy);
+    setMessage(data.message);
+    setTurn(data.turn);
+
+    // 2️⃣ Trigger enemy turn after delay
+    if (data.turn === "enemy") {
+      setTimeout(async () => {
+        const enemyResponse = await fetch(
+          "http://127.0.0.1:5000/api/enemy_turn",
+          { method: "POST" }
+        );
+        const enemyData = await enemyResponse.json();
+        setPlayer(enemyData.player);
+        setEnemy(enemyData.enemy);
+        setMessage((prev) => prev + " " + enemyData.message);
+        setTurn(enemyData.turn);
+        setWaiting(false);
+      }, 1500); // 1.5s delay to simulate thinking
+    } else {
+      setWaiting(false);
+    }
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px", fontFamily: "Arial" }}>
-      <h1>⚔️ Simple Turn-Based RPG ⚔️</h1>
+    <div className="battle-container">
+      <h1>Turn Based Rpg </h1>
 
-      <div style={{ margin: "20px" }}>
-        <h2>Player HP: {player.hp}</h2>
-        {renderHPBar(player.hp)}
-        <h2>Enemy HP: {enemy.hp}</h2>
-        {renderHPBar(enemy.hp)}
+      <div className="battlefield">
+        {/* Enemy Section */}
+        <div className="character-section">
+          <h2>Enemy</h2>
+          <img src="/images/enemy.png" alt="Enemy" className="sprite" />
+          <div className="hp-bar">
+            <div
+              className="hp-fill enemy"
+              style={{ width: `${enemy.hp}%` }}
+            ></div>
+          </div>
+          <p>HP: {enemy.hp}</p>
+        </div>
+
+        {/* Player Section */}
+        <div className="character-section">
+          <h2>Player</h2>
+          <img src="/images/player.png" alt="Player" className="sprite" />
+          <div className="hp-bar">
+            <div
+              className="hp-fill player"
+              style={{ width: `${player.hp}%` }}
+            ></div>
+          </div>
+          <p>HP: {player.hp}</p>
+        </div>
       </div>
 
-      <div style={{ margin: "20px" }}>
-        <button onClick={() => handleAction("attack")} disabled={player.hp <= 0 || enemy.hp <= 0}>
-          Attack
-        </button>
-        <button onClick={() => handleAction("defend")} disabled={player.hp <= 0 || enemy.hp <= 0}>
-          Defend
-        </button>
-        <button onClick={resetGame}>Restart</button>
+      {/* Spell Buttons */}
+      <div className="controls">
+        <h3>Support</h3>
+        <button onClick={() => castSpell("heal")}>Heal ❤️</button>
+        <button onClick={() => castSpell("dmg_boost")}>Attack Boost ⚡</button>
+        <button onClick={() => castSpell("crit_boost")}>Crit Boost ✨</button>
+        <button onClick={() => castSpell("def_boost")}>Defense Boost 🛡️</button>
+
+        <h3>Attack</h3>
+        <button onClick={() => castSpell("punch")}>Punch 👊</button>
+        <button onClick={() => castSpell("spear_throw")}>Spear Throw 🗡️</button>
+        <button onClick={() => castSpell("tornado")}>Tornado 🌪️</button>
+
+        <h3>Defense</h3>
+        <button onClick={() => castSpell("shield_block")}>Shield Block 🛡️</button>
+
+        <h3>Reset</h3>
+        <button onClick={() => castSpell("reset")}>Reset 🔄</button>
       </div>
 
-      <p>{message}</p>
-
-      {(player.hp <= 0 || enemy.hp <= 0) && (
-        <h2 style={{ color: "red" }}>
-          {player.hp <= 0 ? "You were defeated!" : "You won the battle!"}
-        </h2>
-      )}
+      {/* Battle Message */}
+      <div className="message-box">
+        {turn === "enemy" && <p>Enemy is thinking...</p>}
+        <p>{message}</p>
+      </div>
     </div>
   );
 }

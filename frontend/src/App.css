@@ -1,42 +1,174 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+body {
+  background-color: #f0eaea;
+  color: rgb(243, 237, 237);
+  font-family: "Poppins", sans-serif;
   text-align: center;
+  margin: 0;
+  padding: 0;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.battle-container {
+  padding: 20px;
 }
 
-@keyframes logo-spin {
+.battlefield {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 40px 0;
+}
+
+.character-section {
+  width: 200px;
+}
+
+.sprite {
+  width: 100px;
+  height: 100px;
+  image-rendering: pixelated;
+}
+
+.hp-bar {
+  width: 100%;
+  height: 15px;
+  background: #444;
+  border-radius: 10px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.hp-fill.player {
+  background: linear-gradient(90deg, #00ff00, #007700);
+}
+
+.hp-fill.enemy {
+  background: linear-gradient(90deg, #ff0000, #770000);
+}
+
+.controls button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.controls button:hover {
+  background: #555;
+}
+
+.message-box {
+  background: #222;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 20px;
+  font-style: italic;
+}
+
+.sprite {
+  width: 64px;   /* single frame width */
+  height: 64px;  /* single frame height */
+  background: url("/images/player_sprites.png");
+  background-position: 0 0;
+  animation: walk 1s steps(4) infinite; /* assumes 4 frames */
+}
+
+@keyframes walk {
   from {
-    transform: rotate(0deg);
+    background-position: 0 0;
   }
   to {
-    transform: rotate(360deg);
+    background-position: -256px 0; /* 64px * 4 frames */
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #050000;
 }
 
-.card {
-  padding: 2em;
+.battle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center horizontally */
+  justify-content: center; /* center vertically if needed */
+  min-height: 100vh;
+  text-align: center;
+  padding: 20px;
 }
 
-.read-the-docs {
-  color: #888;
+.battlefield {
+  display: flex;
+  justify-content: center; /* center the two characters */
+  gap: 50px; /* space between player and enemy */
+  margin-bottom: 20px;
+}
+
+.character-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center image, hp bar, etc */
+}
+
+.sprite {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.hp-bar {
+  width: 120px;
+  height: 15px;
+  background-color: #ccc;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+}
+
+.hp-fill.player {
+  background-color: #4caf50;
+}
+
+.hp-fill.enemy {
+  background-color: #f44336;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.controls button {
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.message-box {
+  width: 80%;
+  max-width: 500px;
+  background-color: #0f0101;
+  border: 1px solid #999;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 50px;
 }
